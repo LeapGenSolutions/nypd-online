@@ -1,32 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import TestData from "./assets/testData.json";
+import axios from "axios";
 import Logo from "../src/assets/logo.png";
+import processResponse from "./helpers/ProcessResponse";
 
 export default function App() {
   const [query, setQuery] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [filteredResults, setFilteredResults] = useState([]);
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setQuery(value);
-    setSearchActive(value.length > 0);
-    if (value.length > 0) {
+  useEffect(() => {
+    if (!query) {
+      setSearchActive(false);
+      setFilteredResults([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(() => {
+      fetchSearchResults(query);
+    }, 500); // Debounce time of 500ms
+
+    return () => clearTimeout(delayDebounce);
+  }, [query]);
+
+  const fetchSearchResults = async (value) => {
+    try {
       setLoading(true);
-      setTimeout(() => setLoading(false), 1500);
+      const response = await axios.get(import.meta.env.VITE_SEARCH_API, {
+        params: {
+          "api-version": "2023-07-01-Preview",
+          search: value,
+        },
+        headers: {
+          "api-key": atob(import.meta.env.VITE_API_KEY),
+          "Content-Type": "application/json",
+        },
+      });
+
+      setFilteredResults(processResponse(response.data, value));
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredResults = TestData.filter(
-    (item) =>
-      item.FileName.toLowerCase().includes(query.toLowerCase()) ||
-      item.OfficerName.toLowerCase().includes(query.toLowerCase())
-  );
+  const handleSearchChange = (e) => {
+    setQuery(e.target.value);
+    setSearchActive(e.target.value.length > 0);
+  };
 
-  const navItems = ["Services", "Statics & Dashboard",
-    "Personnel", "Careers"
-  ]
+  const navItems = ["Services", "Statistics & Dashboard", "Personnel", "Careers"];
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -37,31 +62,28 @@ export default function App() {
         </div>
         <nav>
           <ul className="flex space-x-4">
-            {navItems.map(navItem =>
+            {navItems.map((navItem, index) => (
               <a
+                key={index}
                 href="#"
                 className="text-black px-4 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-[#005cb8] hover:text-white"
               >
                 {navItem}
               </a>
-            )}
-
+            ))}
           </ul>
         </nav>
       </header>
 
       {/* Search Bar */}
       <div className="w-full flex flex-col items-center px-4">
-        {/* Header Title */}
-
-        {/* Search Bar */}
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: searchActive ? 0 : 100, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className={`w-full flex flex-col items-center ${searchActive ? "mt-2" : "mt-8"}`}
         >
-        <h2 className="text-xl font-bold mb-10 mt-5 text-gray-1600">TRAIL DECISIONS LIBRARY</h2>
+          <h2 className="text-xl font-bold mb-10 mt-5 text-gray-1600">TRIAL DECISIONS LIBRARY</h2>
           <input
             type="text"
             placeholder="Search files..."
@@ -90,10 +112,13 @@ export default function App() {
                     href={file.LinktoTheFile}
                     className="text-blue-600 font-semibold hover:underline"
                   >
-                    {file.FileName}
+                    {file.FileName} 
                   </a>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-gray-700">
                     Date: {file.Date} | Officer: {file.OfficerName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {file.FileContent}
                   </p>
                 </li>
               ))}
