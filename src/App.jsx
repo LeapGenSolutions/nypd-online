@@ -27,15 +27,20 @@ export default function App() {
   const fetchSearchResults = async (value) => {
     try {
       setLoading(true);
-      const response = await axios.get(import.meta.env.VITE_SEARCH_API, {
+      // const response = await axios.get(import.meta.env.VITE_SEARCH_API, {
+      const response = await axios.post(import.meta.env.VITE_SEARCH_API, {
+        "search": value,
+        "queryType": "full",
+        "searchMode": "all"
+      }, {
         params: {
           "api-version": "2023-07-01-Preview",
-          search: value,
+          "Content-Type": "application/json",
         },
         headers: {
           "api-key": atob(import.meta.env.VITE_API_KEY),
           "Content-Type": "application/json",
-        },
+        }
       });
 
       setFilteredResults(processResponse(response.data, value));
@@ -112,7 +117,7 @@ export default function App() {
                     href={file.LinktoTheFile}
                     className="text-blue-600 font-semibold hover:underline"
                   >
-                    {file.FileName} 
+                    {file.FileName}
                   </a>
                   <p className="text-gray-700">
                     Date: {file.Date} | Officer: {file.OfficerName}
