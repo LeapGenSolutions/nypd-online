@@ -1,13 +1,18 @@
 const getDateTimeFromPII = (pii_entities) =>pii_entities.filter(pii_entity =>{
         return pii_entity.type == 'DateTime'
     })[0].text
+  
+const fixBase64 = (str) => {
+    return str.padEnd(str.length + (4 - (str.length % 4)) % 4, '=');
+}
+
 
 const processResponse = (results, searchValue) => {
     // console.log(results);
     
     return results.value.map((data) => {
         try {
-            const LINK = atob(data.metadata_storage_path)
+            const LINK = fixBase64(data.metadata_storage_path)
             const fileName = data.metadata_storage_name
             const fileContent = " . . . . . . "+data.keyphrases.slice(0,5).join(" , ")+" . . . . . ."        
             return {
@@ -25,5 +30,6 @@ const processResponse = (results, searchValue) => {
         }
     })
 }
+
 
 export default processResponse

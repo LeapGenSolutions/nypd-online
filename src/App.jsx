@@ -65,7 +65,7 @@ export default function App() {
         <div className="flex items-center space-x-2">
           <img src={Logo} alt="Logo" className="h-8" />
         </div>
-        <nav>
+        {/* <nav>
           <ul className="flex space-x-4">
             {navItems.map((navItem, index) => (
               <a
@@ -77,7 +77,7 @@ export default function App() {
               </a>
             ))}
           </ul>
-        </nav>
+        </nav> */}
       </header>
 
       {/* Search Bar */}
