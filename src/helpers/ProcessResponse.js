@@ -1,35 +1,29 @@
-const getDateTimeFromPII = (pii_entities) =>pii_entities.filter(pii_entity =>{
-        return pii_entity.type == 'DateTime'
-    })[0].text
-  
-const fixBase64 = (str) => {
-    return str.padEnd(str.length + (4 - (str.length % 4)) % 4, '=');
-}
-
+const getDateTimeFromPII = (pii_entities) => pii_entities.filter(pii_entity => {
+    return pii_entity.type === 'DateTime';
+})[0]?.text || '';
 
 const processResponse = (results, searchValue) => {
-    // console.log(results);
-    
-    return results.value.map((data) => {
+    const processedData = results.value.map((data) => {
         try {
-            const LINK = fixBase64(data.metadata_storage_path)
-            const fileName = data.metadata_storage_name
-            const fileContent = " . . . . . . "+data.keyphrases.slice(0,5).join(" , ")+" . . . . . ."        
+            const LINK = "https://nypdonline.org/files/" + data.metadata_storage_name;
+            const fileName_unsplitted = data.metadata_storage_name.split("_");
+            const fileName = fileName_unsplitted[fileName_unsplitted.length - 1];
+            const fileContent = " . . . . . . " + data.keyphrases.slice(0, 50).join(" , ") + " . . . . . .";
+            const dateTime = getDateTimeFromPII(data.pii_entities);
             return {
                 "FileName": fileName,
-                "LinktoTheFile": LINK.substring(0, LINK.length-1),
-                "OfficerName": data.Police_officer_Name[0],
-                "Date": getDateTimeFromPII(data.pii_entities),
-                "FileContent":fileContent
-            }
+                "LinktoTheFile": LINK,
+                "OfficerName": data.Police_officer_Name[0] || 'Unknown',
+                "Date": dateTime,
+                "FileContent": fileContent
+            };
         } catch (error) {
-            console.log("Some Error for the data ")
-            console.log(data)
-            console.log(error)
-            return{}
+            console.error("Error processing data:", error, data);
+            return null;
         }
-    })
-}
+    }).filter(Boolean);
+    processedData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+    return processedData;
+};
 
-
-export default processResponse
+export default processResponse;

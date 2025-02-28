@@ -88,7 +88,14 @@ export default function App() {
           transition={{ duration: 0.5 }}
           className={`w-full flex flex-col items-center ${searchActive ? "mt-2" : "mt-8"}`}
         >
-          <h2 className="text-xl font-bold mb-10 mt-5 text-gray-1600">TRIAL DECISIONS LIBRARY</h2>
+          <h5 className="w-full max-w-lg font-extrabold mb-8 mt-6 text-[rgb(0,92,184)] leading-relaxed">
+            The <span className="underline">NYPD Trial Library</span> is now searchable.
+            Find trial decisions by entering <span className="italic">names, keywords, or phrases</span> below.
+            <br /><br />
+            Updated monthly, the library contains trial decisions involving uniformed service members of all ranks,
+            prosecuted by both the <span className="font-semibold">Department Advocate's Office</span> and the
+            <span className="font-semibold"> Civilian Complaint Review Board</span>, dating back to <span className="text-black">2008</span>.
+          </h5>
           <input
             type="text"
             placeholder="Search files..."
@@ -114,13 +121,13 @@ export default function App() {
               {filteredResults.map((file, index) => (
                 <li key={index} className="p-4 hover:bg-gray-100 transition">
                   <a
-                    href={file.LinktoTheFile}
+                    href={file.LinktoTheFile} target="_blank"
                     className="text-blue-600 font-semibold hover:underline"
                   >
                     {file.FileName}
                   </a>
                   <p className="text-gray-700">
-                    Date: {file.Date} | Officer: {file.OfficerName}
+                    <b>Date: {file.Date} | Officer: {file.OfficerName}</b>
                   </p>
                   <p className="text-sm text-gray-500">
                     {file.FileContent}
