@@ -88,14 +88,19 @@ export default function App() {
           transition={{ duration: 0.5 }}
           className={`w-full flex flex-col items-center ${searchActive ? "mt-2" : "mt-8"}`}
         >
-          <h5 className="w-full max-w-lg font-extrabold mb-8 mt-6 text-[rgb(0,92,184)] leading-relaxed">
+          {/* <h5 className="w-full max-w-lg font-extrabold mb-8 mt-6 text-[rgb(0,0,0)] leading-relaxed">
             The <span className="underline">NYPD Trial Library</span> is now searchable.
             Find trial decisions by entering <span className="italic">names, keywords, or phrases</span> below.
             <br /><br />
             Updated monthly, the library contains trial decisions involving uniformed service members of all ranks,
             prosecuted by both the <span className="font-semibold">Department Advocate's Office</span> and the
             <span className="font-semibold"> Civilian Complaint Review Board</span>, dating back to <span className="text-black">2008</span>.
-          </h5>
+          </h5> */}
+          <h1 className="w-full max-w-lg text-[30px] font-bold mb-5">TRAIL DECISIONS LIBRARY SEARCH
+          <p className="text-[18px] leading-[1.5] mb-3 mt-5 font-normal">Search below for decisions by entering names, keywords or phrases</p>
+          
+          <p className="text-[18px] leading-[1.5] font-normal">The library is updated monthly and contains trail decisions involving mebers of service of all ranking dating back to 2008</p>
+          </h1>
           <input
             type="text"
             placeholder="Search files..."
