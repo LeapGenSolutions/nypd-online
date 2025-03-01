@@ -9,6 +9,9 @@ export default function App() {
   const [searchActive, setSearchActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filteredResults, setFilteredResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const resultsPerPage = Number(import.meta.env.VITE_RESULTS_PER_PAGE); // Number of results per page
 
   useEffect(() => {
     if (!query) {
@@ -18,24 +21,26 @@ export default function App() {
     }
 
     const delayDebounce = setTimeout(() => {
-      fetchSearchResults(query);
+      fetchSearchResults(query, currentPage);
     }, 500); // Debounce time of 500ms
 
     return () => clearTimeout(delayDebounce);
-  }, [query]);
+  }, [query, currentPage]);
 
-  const fetchSearchResults = async (value) => {
+  const fetchSearchResults = async (value, page) => {
     try {
       setLoading(true);
-      // const response = await axios.get(import.meta.env.VITE_SEARCH_API, {
+      const skip = (page - 1) * resultsPerPage; // Calculate skip for pagination
       const response = await axios.post(import.meta.env.VITE_SEARCH_API, {
-        "search": value,
-        "queryType": "full",
-        "searchMode": "all"
+        search: value,
+        queryType: "full",
+        searchMode: "all"
       }, {
         params: {
           "api-version": "2023-07-01-Preview",
           "Content-Type": "application/json",
+          "$top": resultsPerPage, // Limit the number of results per page
+          "$skip": skip, // Offset for pagination
         },
         headers: {
           "api-key": atob(import.meta.env.VITE_API_KEY),
@@ -43,7 +48,13 @@ export default function App() {
         }
       });
 
+      // Process the results as needed
       setFilteredResults(processResponse(response.data, value));
+
+      // Capture the total number of results from the API response
+      const totalResults = response.data["@odata.count"];
+      setTotalResults(1000); // Store total number of results
+
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -54,6 +65,26 @@ export default function App() {
   const handleSearchChange = (e) => {
     setQuery(e.target.value);
     setSearchActive(e.target.value.length > 0);
+    setCurrentPage(1); // Reset to the first page on query change
+  };
+
+  const handleNextPage = () => {
+    if (currentPage * resultsPerPage < totalResults) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handlePageJump = (e) => {
+    const pageNum = parseInt(e.target.value);
+    if (pageNum > 0 && pageNum <= Math.ceil(totalResults / resultsPerPage)) {
+      setCurrentPage(pageNum);
+    }
   };
 
   const navItems = ["Services", "Statistics & Dashboard", "Personnel", "Careers"];
@@ -65,19 +96,6 @@ export default function App() {
         <div className="flex items-center space-x-2">
           <img src={Logo} alt="Logo" className="h-8" />
         </div>
-        {/* <nav>
-          <ul className="flex space-x-4">
-            {navItems.map((navItem, index) => (
-              <a
-                key={index}
-                href="#"
-                className="text-black px-4 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-[#005cb8] hover:text-white"
-              >
-                {navItem}
-              </a>
-            ))}
-          </ul>
-        </nav> */}
       </header>
 
       {/* Search Bar */}
@@ -88,18 +106,14 @@ export default function App() {
           transition={{ duration: 0.5 }}
           className={`w-full flex flex-col items-center ${searchActive ? "mt-2" : "mt-8"}`}
         >
-          {/* <h5 className="w-full max-w-lg font-extrabold mb-8 mt-6 text-[rgb(0,0,0)] leading-relaxed">
-            The <span className="underline">NYPD Trial Library</span> is now searchable.
-            Find trial decisions by entering <span className="italic">names, keywords, or phrases</span> below.
-            <br /><br />
-            Updated monthly, the library contains trial decisions involving uniformed service members of all ranks,
-            prosecuted by both the <span className="font-semibold">Department Advocate's Office</span> and the
-            <span className="font-semibold"> Civilian Complaint Review Board</span>, dating back to <span className="text-black">2008</span>.
-          </h5> */}
-          <h1 className="w-full max-w-lg text-[30px] font-bold mb-5">TRAIL DECISIONS LIBRARY SEARCH
-          <p className="text-[18px] leading-[1.5] mb-3 mt-5 font-normal">Search below for decisions by entering names, keywords or phrases</p>
-          
-          <p className="text-[18px] leading-[1.5] font-normal">The library is updated monthly and contains trail decisions involving mebers of service of all ranking dating back to 2008</p>
+          <h1 className="w-full max-w-lg text-[30px] font-bold mb-5">
+            TRAIL DECISIONS LIBRARY SEARCH
+            <p className="text-[18px] leading-[1.5] mb-3 mt-5 font-normal">
+              Search below for decisions by entering names, keywords, or phrases
+            </p>
+            <p className="text-[18px] leading-[1.5] font-normal">
+              The library is updated monthly and contains trail decisions involving members of service of all ranking dating back to 2008
+            </p>
           </h1>
           <input
             type="text"
@@ -126,7 +140,8 @@ export default function App() {
               {filteredResults.map((file, index) => (
                 <li key={index} className="p-4 hover:bg-gray-100 transition">
                   <a
-                    href={file.LinktoTheFile} target="_blank"
+                    href={file.LinktoTheFile}
+                    target="_blank"
                     className="text-blue-600 font-semibold hover:underline"
                   >
                     {file.FileName}
@@ -142,6 +157,42 @@ export default function App() {
             </ul>
           ) : (
             <p className="text-gray-500 text-center">No results found.</p>
+          )}
+
+          {/* Pagination Controls */}
+          {totalResults > resultsPerPage && (
+            <div className="flex justify-between mt-4 items-center">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-blue-300 rounded-lg disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              {/* Page Jump Input */}
+              <div className="flex items-center space-x-2">
+                <label htmlFor="pageInput" className="text-sm text-gray-600">Page:</label>
+                <input
+                  id="pageInput"
+                  type="number"
+                  value={currentPage}
+                  min="1"
+                  max={Math.ceil(totalResults / resultsPerPage)}
+                  onChange={handlePageJump}
+                  className="w-16 text-center px-2 py-1 border rounded-lg"
+                />
+                <span className="text-sm text-gray-600">{`of ${Math.ceil(totalResults / resultsPerPage)}`}</span>
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage * resultsPerPage >= totalResults}
+                className="px-4 py-2 bg-blue-300 rounded-lg disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       )}
