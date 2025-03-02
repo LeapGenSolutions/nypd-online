@@ -2,7 +2,27 @@ const getDateTimeFromPII = (pii_entities) => pii_entities.filter(pii_entity => {
     return pii_entity.type === 'DateTime';
 })[0]?.text || '';
 
+const getPoliceOfficerName = (texts) => {
+    for(let i=2;i<texts.length;i++){
+        let text_ele = texts[i]
+        if(text_ele.startsWith("POLICE OFFICER")){
+            return text_ele.split(" ").slice(2,4).join(" ")
+        }
+        if(text_ele.startsWith("DETECTIVE")){
+            return text_ele.split(" ").slice(1,3).join(" ")
+        }
+        if(text_ele.startsWith("CAPTAIN")){
+            return text_ele.split(" ").slice(1,3).join(" ")
+        }
+        if(text_ele.startsWith("SERGENT")){
+            return text_ele.split(" ").slice(1,3).join(" ")
+        }
+    }
+    return "No Police Officer"
+}
+
 const processResponse = (results, searchValue) => {
+    
     const processedData = results.value.map((data) => {
         try {
             const LINK = "https://nypdonline.org/files/" + data.metadata_storage_name;
@@ -13,7 +33,7 @@ const processResponse = (results, searchValue) => {
             return {
                 "FileName": fileName,
                 "LinktoTheFile": LINK,
-                "OfficerName": data.Police_officer_Name[0] || 'Unknown',
+                "OfficerName": getPoliceOfficerName(data.text),
                 "Date": dateTime,
                 "FileContent": fileContent
             };

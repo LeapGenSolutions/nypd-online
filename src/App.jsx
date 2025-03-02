@@ -11,8 +11,7 @@ export default function App() {
   const [filteredResults, setFilteredResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const resultsPerPage = Number(import.meta.env.VITE_RESULTS_PER_PAGE); // Number of results per page
-
+  const resultsPerPage = Number(import.meta.env.VITE_RESULTS_PER_PAGE);
   useEffect(() => {
     if (!query) {
       setSearchActive(false);
@@ -22,7 +21,7 @@ export default function App() {
 
     const delayDebounce = setTimeout(() => {
       fetchSearchResults(query, currentPage);
-    }, 500); // Debounce time of 500ms
+    }, 500);
 
     return () => clearTimeout(delayDebounce);
   }, [query, currentPage]);
@@ -30,17 +29,18 @@ export default function App() {
   const fetchSearchResults = async (value, page) => {
     try {
       setLoading(true);
-      const skip = (page - 1) * resultsPerPage; // Calculate skip for pagination
+      const skip = (page - 1) * resultsPerPage;
       const response = await axios.post(import.meta.env.VITE_SEARCH_API, {
         search: value,
         queryType: "full",
-        searchMode: "all"
+        searchMode: "all",
+        count: true
       }, {
         params: {
           "api-version": "2023-07-01-Preview",
           "Content-Type": "application/json",
-          "$top": resultsPerPage, // Limit the number of results per page
-          "$skip": skip, // Offset for pagination
+          "$top": resultsPerPage,
+          "$skip": skip,
         },
         headers: {
           "api-key": atob(import.meta.env.VITE_API_KEY),
@@ -48,12 +48,10 @@ export default function App() {
         }
       });
 
-      // Process the results as needed
       setFilteredResults(processResponse(response.data, value));
 
-      // Capture the total number of results from the API response
       const totalResults = response.data["@odata.count"];
-      setTotalResults(1000); // Store total number of results
+      setTotalResults(totalResults); // Store total number of results
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -91,14 +89,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Header */}
       <header className="text-white py-4 px-6 shadow-md flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <img src={Logo} alt="Logo" className="h-8" />
         </div>
       </header>
 
-      {/* Search Bar */}
       <div className="w-full flex flex-col items-center px-4">
         <motion.div
           initial={{ y: 50, opacity: 0 }}
@@ -125,14 +121,12 @@ export default function App() {
         </motion.div>
       </div>
 
-      {/* Loading Spinner */}
       {loading && (
         <div className="flex justify-center mt-4">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
         </div>
       )}
 
-      {/* Results */}
       {searchActive && !loading && (
         <div className="max-w-4xl mx-auto mt-6 p-4 bg-white shadow-lg rounded-lg">
           {filteredResults.length > 0 ? (
@@ -159,7 +153,6 @@ export default function App() {
             <p className="text-gray-500 text-center">No results found.</p>
           )}
 
-          {/* Pagination Controls */}
           {totalResults > resultsPerPage && (
             <div className="flex justify-between mt-4 items-center">
               <button
@@ -170,7 +163,6 @@ export default function App() {
                 Previous
               </button>
 
-              {/* Page Jump Input */}
               <div className="flex items-center space-x-2">
                 <label htmlFor="pageInput" className="text-sm text-gray-600">Page:</label>
                 <input
