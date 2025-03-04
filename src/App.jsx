@@ -127,7 +127,22 @@ export default function App() {
         </div>
       )}
 
-      {searchActive && !loading && (
+    {searchActive && totalResults > 500 &&  (
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.5 }}
+        className="max-w-xl mx-auto mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 shadow-md rounded-lg"
+      >
+        <h2 className="text-lg font-semibold">🔍 Optimize Your Search!</h2>
+        <p className="text-sm">
+          Your search is too broad and returned over <b>500 results</b>.  
+          Try refining your keywords for more precise results.
+        </p>
+      </motion.div>
+    )}
+
+      {searchActive && !loading && totalResults < 500 && (
         <div className="max-w-4xl mx-auto mt-6 p-4 bg-white shadow-lg rounded-lg">
           {filteredResults.length > 0 ? (
             <ul className="divide-y divide-gray-200">
