@@ -88,7 +88,7 @@ const processResponse = (results, searchValue) => {
             console.error("Error processing data:", error, data);
             return null;
         }
-    }).filter((data)=>data.Date != "Invalid Date");
+    }).filter((data)=>data.Date != "Invalid Date" || fileName.toString().endsWith(".pdf"));
     processedData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
     return processedData;
 };

@@ -11,7 +11,9 @@ export default function App() {
   const [filteredResults, setFilteredResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [selectedYear, setSelectedYear] = useState("All");
   const resultsPerPage = Number(import.meta.env.VITE_RESULTS_PER_PAGE);
+
   useEffect(() => {
     if (!query) {
       setSearchActive(false);
@@ -28,6 +30,7 @@ export default function App() {
 
   const fetchSearchResults = async (value, page) => {
     try {
+      setSelectedYear("All")
       setLoading(true);
       const skip = (page - 1) * resultsPerPage;
       const response = await axios.post(import.meta.env.VITE_SEARCH_API, {
@@ -48,10 +51,9 @@ export default function App() {
         }
       });
 
-      setFilteredResults(processResponse(response.data, value));
-
-      const totalResults = response.data["@odata.count"];
-      setTotalResults(totalResults); // Store total number of results
+      const processedData = processResponse(response.data, value);
+      setFilteredResults(processedData);
+      setTotalResults(response.data["@odata.count"]);
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -85,7 +87,20 @@ export default function App() {
     }
   };
 
-  const navItems = ["Services", "Statistics & Dashboard", "Personnel", "Careers"];
+  const handleYearChange = (e) => {
+    setSelectedYear(e.target.value);
+  };
+
+  // Extract unique years from search results
+  const uniqueYears = [
+    "All",
+    ...Array.from(new Set(filteredResults.map(item => item.Date?.split(", ")[1])))
+  ];
+
+  // Filter results based on selected year
+  const displayedResults = selectedYear === "All"
+    ? filteredResults
+    : filteredResults.filter(item => item.Date?.includes(selectedYear));
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -103,12 +118,12 @@ export default function App() {
           className={`w-full flex flex-col items-center ${searchActive ? "mt-2" : "mt-8"}`}
         >
           <h1 className="w-full max-w-lg text-[30px] font-bold mb-5">
-            TRAIL DECISIONS LIBRARY SEARCH
+            TRIAL DECISIONS LIBRARY SEARCH
             <p className="text-[18px] leading-[1.5] mb-3 mt-5 font-normal">
               Search below for decisions by entering names, keywords, or phrases
             </p>
             <p className="text-[18px] leading-[1.5] font-normal">
-              The library is updated monthly and contains trail decisions involving members of service of all ranking dating back to 2008
+              The library is updated monthly and contains trial decisions involving members of service of all ranking dating back to 2008
             </p>
           </h1>
           <input
@@ -121,85 +136,63 @@ export default function App() {
         </motion.div>
       </div>
 
+      {/* Optimized Search Banner */}
+      {searchActive && totalResults > 500 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-xl mx-auto mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 shadow-md rounded-lg"
+        >
+          <h2 className="text-lg font-semibold">🔍 Optimize Your Search!</h2>
+          <p className="text-sm">
+            Your search is too broad and returned over <b>500 results</b>.
+            Try refining your keywords for more precise results.
+          </p>
+        </motion.div>
+      )}
       {loading && (
         <div className="flex justify-center mt-4">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
         </div>
       )}
+      {/* Year Filter Dropdown */}
+      {uniqueYears.length > 1 && !loading && totalResults < 500 && (
+        <div className="max-w-4xl mx-auto mt-4">
+          <label htmlFor="yearFilter" className="mr-2 text-gray-700 font-medium">Filter by Year:</label>
+          <select
+            id="yearFilter"
+            value={selectedYear}
+            onChange={handleYearChange}
+            className="px-3 py-2 border rounded-md shadow-sm text-gray-700"
+          >
+            {uniqueYears.map((year, index) => (
+              <option key={index} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
-    {searchActive && totalResults > 500 &&  (
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        transition={{ duration: 0.5 }}
-        className="max-w-xl mx-auto mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 shadow-md rounded-lg"
-      >
-        <h2 className="text-lg font-semibold">🔍 Optimize Your Search!</h2>
-        <p className="text-sm">
-          Your search is too broad and returned over <b>500 results</b>.  
-          Try refining your keywords for more precise results.
-        </p>
-      </motion.div>
-    )}
 
+      {/* Search Results */}
       {searchActive && !loading && totalResults < 500 && (
         <div className="max-w-4xl mx-auto mt-6 p-4 bg-white shadow-lg rounded-lg">
-          {filteredResults.length > 0 ? (
+          {displayedResults.length > 0 ? (
             <ul className="divide-y divide-gray-200">
-              {filteredResults.map((file, index) => (
+              {displayedResults.map((file, index) => (
                 <li key={index} className="p-4 hover:bg-gray-100 transition">
-                  <a
-                    href={file.LinktoTheFile}
-                    target="_blank"
-                    className="text-blue-600 font-semibold hover:underline"
-                  >
+                  <a href={file.LinktoTheFile} target="_blank" className="text-blue-600 font-semibold hover:underline">
                     {file.FileName}
                   </a>
                   <p className="text-gray-700">
                     <b>Date: {file.Date} | Officer: {file.OfficerName}</b>
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {file.FileContent}
-                  </p>
+                  <p className="text-sm text-gray-500">{file.FileContent}</p>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500 text-center">No results found.</p>
-          )}
-
-          {totalResults > resultsPerPage && (
-            <div className="flex justify-between mt-4 items-center">
-              <button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-blue-300 rounded-lg disabled:opacity-50"
-              >
-                Previous
-              </button>
-
-              <div className="flex items-center space-x-2">
-                <label htmlFor="pageInput" className="text-sm text-gray-600">Page:</label>
-                <input
-                  id="pageInput"
-                  type="number"
-                  value={currentPage}
-                  min="1"
-                  max={Math.ceil(totalResults / resultsPerPage)}
-                  onChange={handlePageJump}
-                  className="w-16 text-center px-2 py-1 border rounded-lg"
-                />
-                <span className="text-sm text-gray-600">{`of ${Math.ceil(totalResults / resultsPerPage)}`}</span>
-              </div>
-
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage * resultsPerPage >= totalResults}
-                className="px-4 py-2 bg-blue-300 rounded-lg disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+            <p className="text-gray-500 text-center">No results found for {selectedYear}.</p>
           )}
         </div>
       )}
