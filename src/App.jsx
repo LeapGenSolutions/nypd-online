@@ -139,76 +139,77 @@ export default function App() {
                 >
                     Search
                 </button>
-        </div>
-
-            {/* Optimized Search Banner */ }
-    {
-        searchActive && totalResults > 500 && (
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="max-w-xl mx-auto mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 shadow-md rounded-lg"
-            >
-                <h2 className="text-lg font-semibold">🔍 Optimize Your Search!</h2>
-                <p className="text-sm">
-                    Your search is too broad and returned over <b>500 results</b>.
-                    Try refining your keywords for more precise results.
-                </p>
-            </motion.div>
-        )
-    }
-    {
-        loading && (
-            <div className="flex justify-center mt-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
             </div>
-        )
-    }
-    {/* Year Filter Dropdown */ }
-    {
-        uniqueYears.length > 1 && !loading && totalResults < 500 && (
-            <div className="max-w-4xl mx-auto mt-4">
-                <label htmlFor="yearFilter" className="mr-2 text-gray-700 font-medium">Filter by Year:</label>
-                <select
-                    id="yearFilter"
-                    value={selectedYear}
-                    onChange={handleYearChange}
-                    className="px-3 py-2 border rounded-md shadow-sm text-gray-700"
-                >
-                    {uniqueYears.map((year, index) => (
-                        <option key={index} value={year}>{year}</option>
-                    ))}
-                </select>
-            </div>
-        )
-    }
+
+            {/* Optimized Search Banner */}
+            {
+                searchActive && totalResults > 500 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-xl mx-auto mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 shadow-md rounded-lg"
+                    >
+                        <h2 className="text-lg font-semibold">🔍 Optimized Your Search Results!</h2>
+                        <p className="text-sm">
+                            Your search is too broad and returned over <b>500 results</b>.
+                            <br/>
+                            Now showing <b>500</b> of <b>{totalResults}</b> results !!
+                        </p>
+                    </motion.div>
+                )
+            }
+            {
+                loading && (
+                    <div className="flex justify-center mt-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
+                    </div>
+                )
+            }
+            {/* Year Filter Dropdown */}
+            {
+                uniqueYears.length > 1 && !loading && (
+                    <div className="max-w-4xl mx-auto mt-4">
+                        <label htmlFor="yearFilter" className="mr-2 text-gray-700 font-medium">Filter by Year:</label>
+                        <select
+                            id="yearFilter"
+                            value={selectedYear}
+                            onChange={handleYearChange}
+                            className="px-3 py-2 border rounded-md shadow-sm text-gray-700"
+                        >
+                            {uniqueYears.map((year, index) => (
+                                <option key={index} value={year}>{year}</option>
+                            ))}
+                        </select>
+                    </div>
+                )
+            }
 
 
-    {/* Search Results */ }
-    {
-        searchActive && !loading && totalResults < 500 && (
-            <div className="max-w-4xl mx-auto mt-6 p-4 bg-white shadow-lg rounded-lg">
-                {displayedResults.length > 0 ? (
-                    <ul className="divide-y divide-gray-200">
-                        {displayedResults.map((file, index) => (
-                            <li key={index} className="p-4 hover:bg-gray-100 transition">
-                                <a href={file.LinktoTheFile} target="_blank" className="text-blue-600 font-semibold hover:underline">
-                                    {file.FileName}
-                                </a>
-                                <p className="text-gray-700">
-                                    <b>Date: {file.Date} | Officer: {file.OfficerName}</b>
-                                </p>
-                                <p className="text-sm text-gray-500">{file.FileContent}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-gray-500 text-center">No results found for {selectedYear}.</p>
-                )}
-            </div>
-        )
-    }
+            {/* Search Results */}
+            {
+                searchActive && !loading && (
+                    <div className="max-w-4xl mx-auto mt-6 p-4 bg-white shadow-lg rounded-lg">
+                        {displayedResults.length > 0 ? (
+                            <ul className="divide-y divide-gray-200">
+                                {displayedResults.map((file, index) => (
+                                    <li key={index} className="p-4 hover:bg-gray-100 transition">
+                                        <a href={file.LinktoTheFile} target="_blank" className="text-blue-600 font-semibold hover:underline">
+                                            {file.FileName}
+                                        </a>
+                                        <p className="text-gray-700">
+                                            <b>Date: {file.Date} | Officer: {file.OfficerName}</b>
+                                        </p>
+                                        <p className="text-sm text-gray-500">{file.FileContent}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500 text-center">No results found for {selectedYear}.</p>
+                        )}
+                    </div>
+                )
+            }
         </div >
     );
 }
