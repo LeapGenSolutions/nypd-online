@@ -21,11 +21,11 @@ export default function App() {
       return;
     }
 
-    const delayDebounce = setTimeout(() => {
-      fetchSearchResults(query, currentPage);
-    }, 500);
+    // const delayDebounce = setTimeout(() => {
+      
+    // }, 1500);
 
-    return () => clearTimeout(delayDebounce);
+    // return () => clearTimeout(delayDebounce);
   }, [query, currentPage]);
 
   const fetchSearchResults = async (value, page) => {
@@ -64,8 +64,15 @@ export default function App() {
 
   const handleSearchChange = (e) => {
     setQuery(e.target.value);
-    setSearchActive(e.target.value.length > 0);
+    // setSearchActive(e.target.value.length > 0);
     setCurrentPage(1); // Reset to the first page on query change
+  };
+
+  const handleSearchClick = () => {
+    if (query.trim()) {
+      fetchSearchResults(query, currentPage);
+      setSearchActive(true)
+    }
   };
 
   const handleNextPage = () => {
@@ -133,6 +140,13 @@ export default function App() {
             onChange={handleSearchChange}
             className="px-4 py-2 w-full max-w-lg border rounded-lg shadow-sm focus:ring focus:ring-blue-300 transition"
           />
+          <button 
+              onClick={handleSearchClick} 
+              disabled={loading}
+              className="px-4 py-2 mt-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition"
+            >
+              Search
+            </button>
         </motion.div>
       </div>
 
