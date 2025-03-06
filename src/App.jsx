@@ -37,7 +37,8 @@ export default function App() {
                 search: value,
                 queryType: "full",
                 searchMode: "all",
-                count: true
+                count: true,
+                select:"metadata_storage_name,keyphrases,pii_entities,text,Police_officer_Name"
             }, {
                 params: {
                     "api-version": "2023-07-01-Preview",
@@ -142,7 +143,7 @@ export default function App() {
             </div>
 
             {/* Optimized Search Banner */}
-            {
+            {/* {
                 searchActive && totalResults > 500 && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
@@ -158,7 +159,7 @@ export default function App() {
                         </p>
                     </motion.div>
                 )
-            }
+            } */}
             {
                 loading && (
                     <div className="flex justify-center mt-4">
