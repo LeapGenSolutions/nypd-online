@@ -38,7 +38,7 @@ export default function App() {
                 queryType: "full",
                 searchMode: "all",
                 count: true,
-                select:"metadata_storage_name,keyphrases,pii_entities,text,Police_officer_Name"
+                select: "metadata_storage_name,keyphrases,pii_entities,text,Police_officer_Name"
             }, {
                 params: {
                     "api-version": "2023-07-01-Preview",
@@ -71,8 +71,14 @@ export default function App() {
 
     const handleSearchClick = () => {
         if (query.trim()) {
-            fetchSearchResults(query, currentPage);
+            fetchSearchResults(query.trim(), currentPage);
             setSearchActive(true)
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === "Enter") {
+            handleSearchClick()
         }
     };
 
@@ -131,6 +137,7 @@ export default function App() {
                     placeholder="Search files..."
                     value={query}
                     onChange={handleSearchChange}
+                    onKeyDown={handleKeyPress}
                     className="px-4 py-2 w-full max-w-lg border rounded-lg shadow-sm focus:ring focus:ring-blue-300 transition"
                 />
                 <button
